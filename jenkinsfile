@@ -7,6 +7,15 @@ pipeline {
         PYTHON_VERSION = '3.12-slim'
     }
     stages {
+
+        stage('Preparar entorno') {
+            steps {
+                sh '''
+                apt update && apt install -y python3-venv
+                '''
+            }
+        }
+
         stage('Instalar dependencias') {
             steps {
                 sh '''
