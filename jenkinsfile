@@ -11,7 +11,7 @@ pipeline {
         stage('Preparar entorno') {
             steps {
                 sh '''
-                apt update && apt install -y python3-venv
+                sudo apt update && apt install -y python3-venv
                 '''
             }
         }
