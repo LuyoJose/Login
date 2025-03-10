@@ -1,6 +1,6 @@
 pipeline {
     agent any
-    evironment {
+    environment {
         DOKER_IMAGE = 'login-jose'
         DOCKER_TAG = 'latest'
         PYTHON_VERSION = '3.12-slim'
