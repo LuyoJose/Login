@@ -1,0 +1,27 @@
+pipeline {
+    agent any
+    evironment {
+        DOKER_IMAGE = 'login-jose'
+        DOCKER_TAG = 'latest'
+        DOCKER_REGISTRY = 'docker.io/login-jose'
+        PYTHON_VERSION = '3.12-slim'
+    }
+    stages {
+        stage('Extraccion de repositorio') {
+            steps {
+                echo 'Building..'
+            }
+        }
+        stage('Test') {
+            steps {
+                echo 'Testing..'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo 'Deploying....'
+            }
+        }
+    }
+
+}
