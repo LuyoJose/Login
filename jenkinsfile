@@ -15,13 +15,17 @@ pipeline {
         stage('Clonar Repositorio') {
             steps {
                 script {
-                    sh '''
-                    rm -rf *  # Borra todo en el workspace para evitar conflictos
-                    git clone https://github.com/LuyoJose/Login.git .
-                    '''
-                }
+                sh '''
+                 rm -rf .git  # Elimina cualquier rastro de un repo git previo
+                git init  # Inicializa un repositorio vacío en el workspace
+                git remote add origin https://github.com/LuyoJose/Login.git
+                git fetch origin
+                git reset --hard origin/master
+                '''
             }
         }
+    }
+
 
         stage('Preparar entornos') {
             steps {
