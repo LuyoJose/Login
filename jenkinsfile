@@ -12,6 +12,17 @@ pipeline {
     }
     stages {
 
+        stage('Clonar Repositorio') {
+            steps {
+                script {
+                    sh '''
+                    rm -rf *  # Borra todo en el workspace para evitar conflictos
+                    git clone https://github.com/LuyoJose/Login.git .
+                    '''
+                }
+            }
+        }
+
         stage('Preparar entorno') {
             steps {
                 sh '''
@@ -63,12 +74,4 @@ pipeline {
         }
     }
 
-    post {
-        success {
-            echo "Pipeline ejecutado con éxito."
-        }
-        failure {
-            echo "Pipeline fallido. Revisa los logs."
-        }
-    }
-}
+    post
