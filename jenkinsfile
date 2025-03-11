@@ -23,7 +23,7 @@ pipeline {
             }
         }
 
-        stage('Preparar entorno') {
+        stage('Preparar entornos') {
             steps {
                 sh '''
                  apt update && apt install -y python3-venv
