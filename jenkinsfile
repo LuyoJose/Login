@@ -10,27 +10,28 @@ pipeline {
         DOCKER_REGISTRY = ''  // Si no usas un registry externo, déjalo vacío
         PYTHON_VERSION = '3.12-slim'
     }
+
     stages {
 
         stage('Clonar Repositorio') {
             steps {
                 script {
-                sh '''
-                 rm -rf .git  # Elimina cualquier rastro de un repo git previo
-                git init  # Inicializa un repositorio vacío en el workspace
-                git remote add origin https://github.com/LuyoJose/Login.git
-                git fetch origin
-                git reset --hard origin/master
-                '''
+                    sh '''
+                    if [ ! -d ".git" ]; then
+                        git clone https://github.com/LuyoJose/Login.git .
+                    else
+                        git fetch origin
+                        git reset --hard origin/$(git branch -r | grep 'origin/' | head -n 1 | sed 's/origin\\///')
+                    fi
+                    '''
+                }
             }
         }
-    }
 
-
-        stage('Preparar entornos') {
+        stage('Preparar entorno') {
             steps {
                 sh '''
-                 apt update && apt install -y python3-venv
+                apt update && apt install -y python3-venv
                 '''
             }
         }
@@ -44,6 +45,7 @@ pipeline {
                 '''
             }
         }
+
         stage('Ejecutar pruebas') {
             steps {
                 script {
@@ -58,6 +60,7 @@ pipeline {
                 }
             }
         }
+
         stage('Construir imagen Docker') {
             steps {
                 script {
@@ -65,6 +68,7 @@ pipeline {
                 }
             }
         }
+
         stage('Desplegar Contenedor') {
             steps {
                 script {
@@ -78,4 +82,12 @@ pipeline {
         }
     }
 
-    post
+    post {
+        success {
+            echo "Pipeline ejecutado con éxito."
+        }
+        failure {
+            echo "Pipeline fallido. Revisa los logs."
+        }
+    }
+}
