@@ -1,37 +1,35 @@
 pipeline {
     agent {
         docker {
-            image 'python:3.12'
+            image 'python:3.12-slim'
+            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
+
     environment {
         DOCKER_IMAGE = 'login-jose'
         DOCKER_TAG = 'latest'
-        DOCKER_REGISTRY = ''  // Si no usas un registry externo, déjalo vacío
-        PYTHON_VERSION = '3.12-slim'
     }
 
     stages {
-
-        stage('Clonar Repositorio') {
-            steps {
-                script {
-                    sh '''
-                    if [ ! -d ".git" ]; then
-                        git clone https://github.com/LuyoJose/Login.git .
-                    else
-                        git fetch origin
-                        git reset --hard origin/$(git branch -r | grep 'origin/' | head -n 1 | sed 's/origin\\///')
-                    fi
-                    '''
-                }
-            }
-        }
-
         stage('Preparar entorno') {
             steps {
                 sh '''
-                apt update && apt install -y python3-venv
+                apt update && apt install -y git docker.io python3-venv
+                '''
+            }
+        }
+
+        stage('Clonar Repositorio') {
+            steps {
+                sh '''
+                if [ ! -d ".git" ]; then
+                    git clone https://github.com/LuyoJose/Login.git .
+                else
+                    git fetch origin
+                    BRANCH=$(git rev-parse --abbrev-ref HEAD)
+                    git reset --hard origin/$BRANCH
+                fi
                 '''
             }
         }
@@ -48,11 +46,9 @@ pipeline {
 
         stage('Ejecutar pruebas') {
             steps {
-                script {
-                    sh '''
-                    ./venv/bin/pytest --junitxml=reports/test-results.xml
-                    '''
-                }
+                sh '''
+                ./venv/bin/pytest --junitxml=reports/test-results.xml
+                '''
             }
             post {
                 always {
@@ -63,21 +59,17 @@ pipeline {
 
         stage('Construir imagen Docker') {
             steps {
-                script {
-                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
-                }
+                sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
             }
         }
 
         stage('Desplegar Contenedor') {
             steps {
-                script {
-                    sh '''
-                    docker stop ${DOCKER_IMAGE} || true
-                    docker rm ${DOCKER_IMAGE} || true
-                    docker run -d --name ${DOCKER_IMAGE} -p 8000:8000 ${DOCKER_IMAGE}:${DOCKER_TAG}
-                    '''
-                }
+                sh '''
+                docker stop ${DOCKER_IMAGE} || true
+                docker rm ${DOCKER_IMAGE} || true
+                docker run -d --name ${DOCKER_IMAGE} -p 8000:8000 ${DOCKER_IMAGE}:${DOCKER_TAG}
+                '''
             }
         }
     }
